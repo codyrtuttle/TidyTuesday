@@ -1,0 +1,158 @@
+---
+title: "Tidy Tuesday Week of 10/6 - NCAA Women's Basketball"
+author: "Cody Tuttle"
+date: "October 7, 2020"
+output: 
+  html_document:
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = T, results = 'hide', error = F, warning = F, message = F}
+
+# load packages
+
+library(tidyverse)
+library(lubridate)
+library(mmbtools)
+library(janitor)
+library(readr)
+library(readxl)
+library(openxlsx)
+library(writexl)
+library(tidytuesdayR)
+library (gt)
+
+mmb_load_fonts()
+
+```
+
+```{r echo = T, results = 'hide', error = F, warning = F, message = F}
+
+# read in data
+
+tourn <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-10-06/tournament.csv')
+
+```
+
+```{r}
+
+# table of one seeds
+
+one_seeds <- tourn %>% 
+  mutate(champ = ifelse(tourney_finish == "Champ", 1, 0)) %>%
+  filter(year >= 1994,
+         seed == 1) %>% 
+  group_by(school) %>%
+  summarize(
+    years_as_one_seed = n(), 
+    ever_champ = max(champ), 
+    avg_win_pct = mean(reg_percent, na.rm = T)
+  ) %>%
+  mutate(ever_champ = ifelse(ever_champ == 1, "Yes", "No")) %>%
+  arrange(desc(years_as_one_seed)) %>%
+  top_n(10, years_as_one_seed) %>% 
+  gt_mmb() %>%
+  cols_label(
+    school = "School", 
+    years_as_one_seed = "Times as #1 Seed", 
+    ever_champ = "Ever Tournament Champion?", 
+    avg_win_pct = "Average Winning Pct."
+  ) %>%
+  tab_header(
+    title = "NCAA Women's Basketball Tournament #1 Seeds", 
+    subtitle = "1994 - 2018"
+  ) %>%
+  cols_align(
+    columns = 2:3, align = "right"
+  ) %>%
+  fmt_number(
+    columns = 4,
+    decimals = 2
+  ) %>%
+  cols_move_to_end(columns = vars(ever_champ)) %>%
+  tab_footnote(
+    footnote = "In years that school was a #1 seed", 
+    locations = cells_column_labels(
+      columns = vars(avg_win_pct, ever_champ)
+    )
+  )
+
+one_seeds
+
+```
+
+```{r}
+
+# boxplot of winning percentages by year
+
+tourn %>%
+  ggplot() +
+  geom_boxplot(aes(x = year, y = reg_percent, group = year)) +
+  ylab("Regular Season Winning Percentage") +
+  ggtitle("NCAA Women's Basketball Tournament", 
+          subtitle = "Distribution of Teams' Winning Percentage, 1982 - 2018") +
+  expand_limits(x = c(1982, 2018), y = c(0, 100)) +
+  scale_x_continuous(breaks = seq(1982, 2018, 4)) +
+  theme_mmb_basic(axis.title.y = element_text(size = 12),
+                  axis.title.x = element_blank())
+
+```
+
+```{r}
+
+# graph of the number of tourney wins by each seed 
+
+seed_champs <- tourn %>% 
+  filter(year >= 1994, 
+         tourney_finish == "Champ") %>% 
+  group_by(seed) %>%
+  count() %>%
+  ggplot(aes(x = seed, y = n)) +
+  geom_col(fill = mncolors["minnesota_blue"]) +
+  expand_limits(y = c(0,20)) +
+  geom_text(aes(label = n), vjust = -0.5, size = 4) +
+  xlab("Seed") +
+  ggtitle("NCAA Women's Basketball Tournament", 
+          subtitle = "Number of times as champ by seed, 1994 - 2018") +
+  theme_mmb_basic(axis.title.y = element_blank(),
+                  axis.text.y = element_blank(), 
+                  axis.ticks.y = element_blank(),
+                  axis.title.x = element_text(size = 12))
+  
+  
+seed_champs
+
+```
+
+```{r}
+
+# graph of the number of tourney wins by each conf 
+
+conf_champs <- tourn %>% 
+  filter(tourney_finish == "Champ") %>% 
+  group_by(conference) %>%
+  count() %>%
+  ggplot(aes(x = fct_reorder(conference, n), y = n)) +
+  geom_col(fill = mncolors["minnesota_blue"]) +
+  expand_limits(y = c(0,10)) +
+  geom_text(aes(label = n), hjust = "left", size = 4) +
+  xlab("Conference") +
+  ylab("Times as Champ") +
+  ggtitle("NCAA Women's Basketball Tournament", 
+          subtitle = "Number of times as champ by conference, 1982 - 2018") +
+  coord_flip() +
+  theme_mmb_basic(plot.title.position = "plot",
+                  axis.title.x = element_blank(),
+                  axis.text.x = element_blank(), 
+                  axis.ticks.x = element_blank(), 
+                  axis.title.y = element_text(size = 12))
+  
+  
+conf_champs
+
+```
+
