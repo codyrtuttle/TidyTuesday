@@ -1,0 +1,12 @@
+---
+title: "Tidy Tuesday Week of 10/20"
+author: "Cody Tuttle"
+date: "October 19, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Creating this now as a test to make sure this shows up on Github
