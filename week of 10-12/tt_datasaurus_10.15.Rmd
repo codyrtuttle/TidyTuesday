@@ -1,0 +1,142 @@
+---
+title: "Tidy Tuesday Week of 10/13"
+author: "Cody Tuttle"
+date: "October 15, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = T, results = 'hide', error = F, warning = F, message = F}
+
+# load packages
+
+#install.packages("cowplot")
+
+library(tidyverse)
+library(lubridate)
+library(mmbtools)
+library(janitor)
+library(readr)
+library(readxl)
+library(openxlsx)
+library(writexl)
+library(tidytuesdayR)
+library(gt)
+library(cowplot)
+
+mmb_load_fonts()
+
+```
+
+```{r echo = T, results = 'hide', error = F, warning = F, message = F}
+
+# read in data
+
+datasaurus <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-10-13/datasaurus.csv')
+
+datasaurus <- datasaurus %>% 
+  filter(dataset %in% c("away", "bullseye", "dino", "high_lines", "x_shape"))
+
+```
+
+```{r}
+
+plots <- datasaurus %>% 
+  ggplot(aes(x = x, y = y, color = dataset)) +
+  geom_point() +
+  scale_color_mncol(palette = "main", discrete = T) +
+  ylab("Scatterplots") +
+  #ggtitle("Datasaurus Dozen Four Ways", 
+          #subtitle = "Visualizing the importance of visualization") +
+  theme_mmb_basic(legend.position = "none",
+                  plot.title.position = "plot",
+                  axis.title.x = element_blank(), 
+                  axis.title.y = element_text(size = 12)) +
+  facet_wrap(~dataset, ncol = 5)
+
+
+boxplots <- datasaurus %>% 
+  pivot_longer(cols = x:y, names_to = "variable", values_to = "value") %>%
+  ggplot(aes(x = variable, y = value, group = variable, color = dataset)) +
+  geom_boxplot() +
+  scale_color_mncol(palette = "main", discrete = T) +
+  ylab("Boxplots") +
+  theme_mmb_basic(legend.position = "none", 
+                  axis.title.x = element_blank(), 
+                  axis.title.y = element_text(size = 12), 
+                  strip.text.x = element_blank()) +
+  facet_wrap(~dataset, ncol = 5)
+
+
+  
+means <- datasaurus %>% 
+  group_by(dataset) %>% 
+  summarize(x = mean(x), 
+            y = mean(y)) %>% 
+  pivot_longer(cols = x:y, names_to = "variable", values_to = "value") %>% 
+  ggplot(aes(x = variable, y = value, fill = dataset)) +
+  geom_col() +
+  scale_fill_mncol(palette = "main", discrete = T) +
+  ylab("Means") +
+  theme_mmb_basic(legend.position = "none", 
+                  axis.title.x = element_blank(), 
+                  axis.title.y = element_text(size = 12), 
+                  strip.text.x = element_blank()) +
+  facet_wrap(~dataset, ncol = 5)
+
+
+
+sd <- datasaurus %>% 
+  group_by(dataset) %>% 
+  summarize(x = sd(x), 
+            y = sd(y)) %>% 
+  pivot_longer(cols = x:y, names_to = "variable", values_to = "value") %>% 
+  ggplot(aes(x = variable, y = value, fill = dataset)) +
+  geom_col() +
+  scale_fill_mncol(palette = "main", discrete = T) +
+  ylab("SDs") +
+  theme_mmb_basic(legend.position = "none", 
+                  axis.title.x = element_blank(), 
+                  axis.title.y = element_text(size = 12), 
+                  strip.text.x = element_blank()) +
+  facet_wrap(~dataset, ncol = 5)
+
+
+  
+```
+
+```{r, error = F, warning = F, message = F}
+
+title <- ggdraw() +
+  draw_label(
+    "Datasaurus Dozen Four Ways", 
+    fontface = "bold", 
+    size = 15,
+    x = 0, 
+    hjust = 0
+  ) +
+  theme(plot.margin = margin(0,0,0,7))
+
+subtitle <- ggdraw() +
+  draw_label(
+    "Visualizing the importance of visualization and not just summary statistics", 
+    fontface =  "plain",
+    size = 12,
+    x = 0, 
+    hjust = 0
+  ) +
+  theme(plot.margin = margin(0,0,0,7))
+
+plot <- plot_grid(title, subtitle, plots, boxplots,  means, sd, 
+                  nrow = 7, 
+                  rel_heights = c(.20, .25, 1.25, 1, 1, 1))
+
+plot
+
+save_plot("H:\\Tidy Tuesday\\tt_datasaurus.png", plot, base_height = 8, base_width = 8)
+
+```
+
