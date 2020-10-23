@@ -1,16 +1,9 @@
----
-title: "Tidy Tuesday Week of 10/20"
-author: "Cody Tuttle"
-date: "October 19, 2020"
-output: github_document  
----
+Tidy Tuesday Week of 10/20
+================
+Cody Tuttle
+October 19, 2020
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, results = 'hide', error = F, warning = F, message = F}
-
+``` r
 # install.packages("gganimate")
 # install.packages("mapproj")
 # install.packages("transformr")
@@ -37,21 +30,29 @@ library(statebins)
 mmb_load_fonts()
 
 options(scipen = 999)
-
 ```
 
-
-```{r}
-
+``` r
 beer <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-10-20/beer_awards.csv')
-
-
-fips <- read_excel("Q:\\Budget Services\\Results Management\\COVID\\Safe Re-opening\\Data\\state fips codes.xlsx")
-
 ```
 
-```{r}
+    ## 
+    ## -- Column specification --------------------------------------------------------
+    ## cols(
+    ##   medal = col_character(),
+    ##   beer_name = col_character(),
+    ##   brewery = col_character(),
+    ##   city = col_character(),
+    ##   state = col_character(),
+    ##   category = col_character(),
+    ##   year = col_double()
+    ## )
 
+``` r
+fips <- read_excel("Q:\\Budget Services\\Results Management\\COVID\\Safe Re-opening\\Data\\state fips codes.xlsx")
+```
+
+``` r
 ### join states data pieces
 
 beer_states <- beer %>% 
@@ -60,12 +61,11 @@ beer_states <- beer %>%
   mutate(medals_total = ifelse(is.na(medals_total), 0, medals_total)) %>% 
   ungroup() %>% 
   left_join(fips, by = c("state" = "state_abbr"))
-
 ```
 
+    ## `summarise()` regrouping output by 'state' (override with `.groups` argument)
 
-```{r}
-
+``` r
 plot <- beer_states %>% 
   filter(year >= 2000) %>% 
   ggplot(aes(state = state, fill = medals_total)) +
@@ -83,6 +83,10 @@ plot <- beer_states %>%
   transition_states(year, transition_length = 20, state_length = 100)
   
 animate(plot, fps = 4)
+```
 
+![](tt_test_10.19_files/figure-gfm/unnamed-chunk-4-1.gif)<!-- -->
+
+``` r
 anim_save("gabf_anim.gif")
 ```
