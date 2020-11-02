@@ -1,0 +1,30 @@
+---
+title: "Rmd Test"
+author: "Cody Tuttle"
+date: "11/2/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(tidyverse)
+
+```
+
+```{r}
+
+data(iris)
+
+```
+
+```{r}
+
+iris %>% 
+  group_by(Species) %>% 
+  summarise(mean = mean(Sepal.Length, na.rm = T)) %>% 
+  ggplot(aes(x = fct_reorder(Species, mean), y = mean)) +
+  geom_col()
