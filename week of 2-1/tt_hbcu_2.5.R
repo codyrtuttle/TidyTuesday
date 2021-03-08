@@ -51,7 +51,7 @@ hbcu <-
   mutate(black_share = (students_black/students)) %>% 
   filter(category %in% c("Total enrollment", "Total - Private", "Total - Public", "4-year", "2-year"))
 
-ggplot() +
+plot <- ggplot() +
   geom_line(data = filter(hbcu, category == "Total enrollment"), 
             aes(x = Year, y = black_share, group = category, color = category), 
             size = 1.5) +
@@ -78,4 +78,4 @@ ggplot() +
     plot.caption.position = "plot"
   )
 
-ggsave("H:\\Tidy Tuesday\\TidyTuesday\\week of 1-25\\tt_nhl_plot.png", plot, height = 6, width = 9, units = "in", dpi = 200)          
+ggsave("H:\\Tidy Tuesday\\TidyTuesday\\week of 2-1\\tt_hbcu_plot.png", plot, height = 6, width = 7, units = "in", dpi = 200)          
