@@ -36,7 +36,7 @@ income_mean <- readr::read_csv('https://raw.githubusercontent.com/rfordatascienc
 
 
 
-income_limits %>% 
+plot <- income_limits %>% 
   mutate(income_quintile = factor(income_quintile, 
                                   levels = c("Lowest", "Second", "Third", "Fourth", "Highest", "Top 5%"))) %>% 
   filter(race %in% c("Black Alone", "White Alone", "Hispanic")) %>% 
@@ -56,6 +56,7 @@ income_limits %>%
   ) +
   theme_mmb_basic() +
     theme(
+      plot.margin = margin(1,1,1,1,"cm"),
       legend.position = "none",
       plot.subtitle = element_markdown(size = 12), 
       plot.caption = element_markdown(size = 10, face = "italic"),
@@ -63,6 +64,9 @@ income_limits %>%
       plot.title.position = "plot", 
       plot.caption.position = "plot"
     )
+
+
+ggsave("H:\\Tidy Tuesday\\TidyTuesday\\week of 2021-02-08\\tt_income_plot.png", plot, height = 6, width = 11, units = "in", dpi = 200)  
 
 # explore other data sets
 
