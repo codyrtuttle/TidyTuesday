@@ -1,0 +1,66 @@
+---
+title: "#TidyTuesday Post Offices"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Load packages and set options
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+library(tidyverse)
+library(cowplot)
+library(scales)
+library(janitor)
+library(tidytext)
+library(mmbtools)
+library(lubridate)
+library(ggtext)
+library(plotly)
+library(crosstalk)
+library(maps)
+library(leaflet)
+
+mmb_load_fonts()
+```
+
+## Load data
+
+```{r, warning=FALSE, message=FALSE, results='hide'}
+post_offices <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-04-13/post_offices.csv')
+```
+
+```{r}
+mn_po <- post_offices %>% 
+  filter(state == "MN", gnis_feature_class == "Post Office") %>% 
+  mutate(years_open = ifelse(is.na(discontinued), 
+                             2000 - established, 
+                             discontinued - established))
+```
+
+```{r}
+mn_po_shared <- SharedData$new(mn_po, key ~id)
+```
+
+
+```{r}
+map <- leaflet(data = mn_po_shared) %>% 
+  addTiles() %>%  
+  # setView(lat = 46.7296, lng = -94.6859, zoom = 5) %>%
+  addCircleMarkers(~longitude, ~latitude, radius = 1, label = ~gnis_orig_name)
+```
+
+```{r}
+plot <- 
+  ggplot(data = mn_po_shared) +
+  geom_point(aes(established, years_open))
+
+plot_ly <- ggplotly(plot)
+```
+
+```{r}
+bscols(map, plot_ly)
+```
+
